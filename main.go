@@ -171,17 +171,7 @@ func parseArgs() (int, [2]int, [2]int) {
 	return size, startTab, endTab
 }
 
-// Update screen 60 time / s
-func (env *Env) update(screen *ebiten.Image) error {
-	if ebiten.IsDrawingSkipped() {
-		return nil
-	}
-	// print map
-	gridOp := &ebiten.DrawImageOptions{}
-	gridOp.GeoM.Translate(0, 0)
-	screen.DrawImage(env.grid, gridOp)
-
-	// Move
+func (env *Env) movePlayer() {
 	switch {
 	case inpututil.IsKeyJustPressed(ebiten.KeyUp):
 		if env.player.Y-env.sqW >= 0 {
@@ -200,7 +190,20 @@ func (env *Env) update(screen *ebiten.Image) error {
 			env.player.X -= env.sqW
 		}
 	}
-	// Draw player
+}
+
+// Update screen 60 time / s
+func (env *Env) update(screen *ebiten.Image) error {
+	if ebiten.IsDrawingSkipped() {
+		return nil
+	}
+	// Print map
+	gridOp := &ebiten.DrawImageOptions{}
+	gridOp.GeoM.Translate(0, 0)
+	screen.DrawImage(env.grid, gridOp)
+	// Move
+	env.movePlayer()
+	// Print player
 	playerSq := env.buildSquare(3)
 	playerOp := &ebiten.DrawImageOptions{}
 	playerOp.GeoM.Translate(float64(env.player.X), float64(env.player.Y))

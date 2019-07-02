@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/hajimehoshi/ebiten"
-	//"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/inpututil"
 )
 
 const (
@@ -22,16 +22,19 @@ type Env struct {
 	sqList [][]*square
 	grid   *ebiten.Image
 
+	player image.Point
+
 	sqW    int
 	offset int
 
 	start image.Point
 	end   image.Point
 
-	bgCol    color.Color
-	lnCol    color.Color
-	startCol color.Color
-	endCol   color.Color
+	bgCol     color.Color
+	lnCol     color.Color
+	startCol  color.Color
+	endCol    color.Color
+	playerCol color.Color
 }
 
 type square struct {
@@ -58,6 +61,8 @@ func (env *Env) buildSquare(state int) *ebiten.Image {
 		subSq.Fill(env.startCol)
 	case state == 2:
 		subSq.Fill(env.endCol)
+	case state == 3:
+		subSq.Fill(env.playerCol)
 	}
 	// Append sub in full
 	op := &ebiten.DrawImageOptions{}
@@ -69,15 +74,17 @@ func (env *Env) buildSquare(state int) *ebiten.Image {
 
 func buildMap(size int, start, end [2]int) Env {
 	env := Env{
-		sqList:   make([][]*square, size),
-		sqW:      int(winW / size),
-		offset:   1,
-		start:    image.Point{start[0], start[1]},
-		end:      image.Point{end[0], end[1]},
-		bgCol:    color.RGBA{255, 255, 255, 255},
-		lnCol:    color.RGBA{244, 236, 215, 255},
-		startCol: color.RGBA{178, 76, 99, 255},
-		endCol:   color.RGBA{50, 232, 117, 255},
+		sqList:    make([][]*square, size),
+		player:    image.Point{start[0], start[1]},
+		sqW:       int(winW / size),
+		offset:    1,
+		start:     image.Point{start[0], start[1]},
+		end:       image.Point{end[0], end[1]},
+		bgCol:     color.RGBA{255, 255, 255, 255},
+		lnCol:     color.RGBA{244, 236, 215, 255},
+		startCol:  color.RGBA{178, 76, 99, 155},
+		endCol:    color.RGBA{50, 232, 117, 155},
+		playerCol: color.RGBA{0, 0, 0, 255},
 	}
 	// Main grid
 	var err error
@@ -120,23 +127,10 @@ func buildMap(size int, start, end [2]int) Env {
 	return env
 }
 
-// Update screen 60 time / s
-func (env *Env) update(screen *ebiten.Image) error {
-	if ebiten.IsDrawingSkipped() {
-		return nil
-	}
-	// print map
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(0, 0)
-	screen.DrawImage(env.grid, op)
-	// Game
-	return nil
-}
-
 func parseArgs() (int, [2]int, [2]int) {
 	//Parse Args
 	if len(os.Args[1:]) < 3 {
-		fmt.Println("Missing Argument")
+		fmt.Printf("Missing Argument\nUsage : Astart_go size start end\nwith :\n\tsize : int (map width)\n\tstart : int,int (ex:6,8)\n\tend : int,int (ex:31,30)\n")
 		os.Exit(1)
 	}
 	size, err := strconv.Atoi(os.Args[1])
@@ -175,6 +169,43 @@ func parseArgs() (int, [2]int, [2]int) {
 	}
 	endTab[1] = er1
 	return size, startTab, endTab
+}
+
+// Update screen 60 time / s
+func (env *Env) update(screen *ebiten.Image) error {
+	if ebiten.IsDrawingSkipped() {
+		return nil
+	}
+	// print map
+	gridOp := &ebiten.DrawImageOptions{}
+	gridOp.GeoM.Translate(0, 0)
+	screen.DrawImage(env.grid, gridOp)
+
+	// Move
+	switch {
+	case inpututil.IsKeyJustPressed(ebiten.KeyUp):
+		if env.player.Y-env.sqW >= 0 {
+			env.player.Y -= env.sqW
+		}
+	case inpututil.IsKeyJustPressed(ebiten.KeyDown):
+		if env.player.Y+env.sqW < winH {
+			env.player.Y += env.sqW
+		}
+	case inpututil.IsKeyJustPressed(ebiten.KeyRight):
+		if env.player.X+env.sqW < winW {
+			env.player.X += env.sqW
+		}
+	case inpututil.IsKeyJustPressed(ebiten.KeyLeft):
+		if env.player.X-env.sqW >= 0 {
+			env.player.X -= env.sqW
+		}
+	}
+	// Draw player
+	playerSq := env.buildSquare(3)
+	playerOp := &ebiten.DrawImageOptions{}
+	playerOp.GeoM.Translate(float64(env.player.X), float64(env.player.Y))
+	screen.DrawImage(playerSq, playerOp)
+	return nil
 }
 
 func main() {

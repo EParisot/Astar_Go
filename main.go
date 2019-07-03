@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"image"
 	"image/color"
@@ -34,6 +35,7 @@ type Env struct {
 	lnCol     color.Color
 	startCol  color.Color
 	endCol    color.Color
+	wallCol   color.Color
 	playerCol color.Color
 }
 
@@ -62,6 +64,8 @@ func (env *Env) buildSquare(state int) *ebiten.Image {
 	case state == 2:
 		subSq.Fill(env.endCol)
 	case state == 3:
+		subSq.Fill(env.wallCol)
+	case state == 4:
 		subSq.Fill(env.playerCol)
 	}
 	// Append sub in full
@@ -72,7 +76,7 @@ func (env *Env) buildSquare(state int) *ebiten.Image {
 	return emptySq
 }
 
-func buildMap(size int, start, end [2]int) Env {
+func buildMap(size int, start, end []int, readenMap [][]int) Env {
 	env := Env{
 		sqList:    make([][]*square, size),
 		player:    image.Point{start[0], start[1]},
@@ -84,7 +88,8 @@ func buildMap(size int, start, end [2]int) Env {
 		lnCol:     color.RGBA{244, 236, 215, 255},
 		startCol:  color.RGBA{178, 76, 99, 155},
 		endCol:    color.RGBA{50, 232, 117, 155},
-		playerCol: color.RGBA{0, 0, 0, 255},
+		wallCol:   color.RGBA{0, 0, 0, 155},
+		playerCol: color.RGBA{0, 0, 0, 200},
 	}
 	// Main grid
 	var err error
@@ -96,6 +101,7 @@ func buildMap(size int, start, end [2]int) Env {
 	emptySq := env.buildSquare(0)
 	startSq := env.buildSquare(1)
 	endSq := env.buildSquare(2)
+	wallSq := env.buildSquare(3)
 
 	//Draw all squares and populate sqList
 	for y := 0; y < size; y++ {
@@ -103,23 +109,30 @@ func buildMap(size int, start, end [2]int) Env {
 		for x := 0; x < size; x++ {
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(x*env.sqW), float64(y*env.sqW))
-			if start[0] == x && start[1] == y {
+			switch {
+			case start[0] == x && start[1] == y:
 				env.grid.DrawImage(startSq, op)
 				env.sqList[y][x] = &square{
 					pos:   image.Point{x * env.sqW, y * env.sqW},
 					state: 1,
 				}
-			} else if end[0] == x && end[1] == y {
+			case end[0] == x && end[1] == y:
 				env.grid.DrawImage(endSq, op)
 				env.sqList[y][x] = &square{
 					pos:   image.Point{x * env.sqW, y * env.sqW},
 					state: 2,
 				}
-			} else {
+			case readenMap[y][x] == 0:
 				env.grid.DrawImage(emptySq, op)
 				env.sqList[y][x] = &square{
 					pos:   image.Point{x * env.sqW, y * env.sqW},
 					state: 0,
+				}
+			case readenMap[y][x] == 3:
+				env.grid.DrawImage(wallSq, op)
+				env.sqList[y][x] = &square{
+					pos:   image.Point{x * env.sqW, y * env.sqW},
+					state: 3,
 				}
 			}
 		}
@@ -127,67 +140,91 @@ func buildMap(size int, start, end [2]int) Env {
 	return env
 }
 
-func parseArgs() (int, [2]int, [2]int) {
+func parseArgs() (int, []int, []int, [][]int) {
 	//Parse Args
-	if len(os.Args[1:]) < 3 {
-		fmt.Printf("Missing Argument\nUsage : Astart_go size start end\nwith :\n\tsize : int (map width)\n\tstart : int,int (ex:6,8)\n\tend : int,int (ex:31,30)\n")
+	if len(os.Args[1:]) < 1 {
+		fmt.Printf("Missing Argument\nUsage : Astart_go map_file\n")
 		os.Exit(1)
 	}
-	size, err := strconv.Atoi(os.Args[1])
+	// Read map file
+	file, err := os.Open(os.Args[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	reader := bufio.NewReader(file)
+	firstLine, _, err := reader.ReadLine()
+	if err != nil {
+		fmt.Println("Error Reading map file")
+	}
+	params := strings.Split(string(firstLine), ";")
+	// Read size
+	size, err := strconv.Atoi(params[0])
 	if err != nil || size < 8 {
 		fmt.Println("Invalid Argument")
 		os.Exit(1)
 	}
-	startStr := os.Args[2]
-	resStart := strings.Split(startStr, ",")
-	var startTab [2]int
-	sr0, err0 := strconv.Atoi(resStart[0])
-	if err0 != nil {
-		fmt.Println("Invalid Argument")
-		os.Exit(1)
+	// Read map
+	startTab := make([]int, 2)
+	endTab := make([]int, 2)
+	readenMap := make([][]int, size)
+	for y := 0; y < size; y++ {
+		line, _, err := reader.ReadLine()
+		if err != nil {
+			fmt.Println("Error Reading map file")
+		}
+		readenMap[y] = make([]int, size)
+		for x := 0; x < size; x++ {
+			switch {
+			case line[x] == '.':
+				readenMap[y][x] = 0
+			case line[x] == 's':
+				readenMap[y][x] = 1
+				startTab[0] = x
+				startTab[1] = y
+			case line[x] == 'e':
+				readenMap[y][x] = 2
+				endTab[0] = x
+				endTab[1] = y
+			case line[x] == '#':
+				readenMap[y][x] = 3
+			}
+		}
 	}
-	startTab[0] = sr0
-	sr1, err1 := strconv.Atoi(resStart[1])
-	if err1 != nil {
-		fmt.Println("Invalid Argument")
-		os.Exit(1)
+	return size, startTab, endTab, readenMap
+}
+
+func (env *Env) check_move(x, y int) bool {
+	if env.sqList[y][x].state == 3 {
+		return false
 	}
-	startTab[1] = sr1
-	endStr := os.Args[3]
-	resEnd := strings.Split(endStr, ",")
-	var endTab [2]int
-	er0, err0 := strconv.Atoi(resEnd[0])
-	if err0 != nil {
-		fmt.Println("Invalid Argument")
-		os.Exit(1)
+	return true
+}
+
+func (env *Env) check_end(x, y int) bool {
+	if env.sqList[y][x].state == 2 {
+		return true
 	}
-	endTab[0] = er0
-	er1, err1 := strconv.Atoi(resEnd[1])
-	if err1 != nil {
-		fmt.Println("Invalid Argument")
-		os.Exit(1)
-	}
-	endTab[1] = er1
-	return size, startTab, endTab
+	return false
 }
 
 func (env *Env) movePlayer() {
 	switch {
 	case inpututil.IsKeyJustPressed(ebiten.KeyUp):
-		if env.player.Y-env.sqW >= 0 {
-			env.player.Y -= env.sqW
+		if env.player.Y-1 >= 0 && env.check_move(env.player.X, env.player.Y-1) {
+			env.player.Y--
 		}
 	case inpututil.IsKeyJustPressed(ebiten.KeyDown):
-		if env.player.Y+env.sqW < winH {
-			env.player.Y += env.sqW
+		if env.player.Y+1 < winH/env.sqW && env.check_move(env.player.X, env.player.Y+1) {
+			env.player.Y++
 		}
 	case inpututil.IsKeyJustPressed(ebiten.KeyRight):
-		if env.player.X+env.sqW < winW {
-			env.player.X += env.sqW
+		if env.player.X+1 < winW/env.sqW && env.check_move(env.player.X+1, env.player.Y) {
+			env.player.X++
 		}
 	case inpututil.IsKeyJustPressed(ebiten.KeyLeft):
-		if env.player.X-env.sqW >= 0 {
-			env.player.X -= env.sqW
+		if env.player.X-1 >= 0 && env.check_move(env.player.X-1, env.player.Y) {
+			env.player.X--
 		}
 	}
 }
@@ -204,16 +241,16 @@ func (env *Env) update(screen *ebiten.Image) error {
 	// Move
 	env.movePlayer()
 	// Print player
-	playerSq := env.buildSquare(3)
+	playerSq := env.buildSquare(4)
 	playerOp := &ebiten.DrawImageOptions{}
-	playerOp.GeoM.Translate(float64(env.player.X), float64(env.player.Y))
+	playerOp.GeoM.Translate(float64(env.player.X*env.sqW), float64(env.player.Y*env.sqW))
 	screen.DrawImage(playerSq, playerOp)
 	return nil
 }
 
 func main() {
-	size, startTab, endTab := parseArgs()
-	env := buildMap(size, startTab, endTab)
+	size, startTab, endTab, readenMap := parseArgs()
+	env := buildMap(size, startTab, endTab, readenMap)
 	// Creates main window
 	if err := ebiten.Run(env.update, winW, winH, 1, "Astar Go"); err != nil {
 		log.Fatal(err)

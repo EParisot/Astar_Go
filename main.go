@@ -194,14 +194,14 @@ func parseArgs() (int, []int, []int, [][]int) {
 	return size, startTab, endTab, readenMap
 }
 
-func (env *Env) check_move(x, y int) bool {
+func (env *Env) checkMove(x, y int) bool {
 	if env.sqList[y][x].state == 3 {
 		return false
 	}
 	return true
 }
 
-func (env *Env) check_end(x, y int) bool {
+func (env *Env) checkEnd(x, y int) bool {
 	if env.sqList[y][x].state == 2 {
 		return true
 	}
@@ -211,19 +211,19 @@ func (env *Env) check_end(x, y int) bool {
 func (env *Env) movePlayer() {
 	switch {
 	case inpututil.IsKeyJustPressed(ebiten.KeyUp):
-		if env.player.Y-1 >= 0 && env.check_move(env.player.X, env.player.Y-1) {
+		if env.player.Y-1 >= 0 && env.checkMove(env.player.X, env.player.Y-1) {
 			env.player.Y--
 		}
 	case inpututil.IsKeyJustPressed(ebiten.KeyDown):
-		if env.player.Y+1 < winH/env.sqW && env.check_move(env.player.X, env.player.Y+1) {
+		if env.player.Y+1 < winH/env.sqW && env.checkMove(env.player.X, env.player.Y+1) {
 			env.player.Y++
 		}
 	case inpututil.IsKeyJustPressed(ebiten.KeyRight):
-		if env.player.X+1 < winW/env.sqW && env.check_move(env.player.X+1, env.player.Y) {
+		if env.player.X+1 < winW/env.sqW && env.checkMove(env.player.X+1, env.player.Y) {
 			env.player.X++
 		}
 	case inpututil.IsKeyJustPressed(ebiten.KeyLeft):
-		if env.player.X-1 >= 0 && env.check_move(env.player.X-1, env.player.Y) {
+		if env.player.X-1 >= 0 && env.checkMove(env.player.X-1, env.player.Y) {
 			env.player.X--
 		}
 	}

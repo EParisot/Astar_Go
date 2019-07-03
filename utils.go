@@ -11,10 +11,10 @@ import (
 
 // Moves opcodes
 const (
-	UP    = 1
-	DOWN  = 3
 	LEFT  = 0
+	UP    = 1
 	RIGHT = 2
+	DOWN  = 3
 
 	DELAY = time.Second / 2
 )
@@ -41,25 +41,25 @@ func (env *Env) buildMap(size int, readenMap [][]int) {
 			case readenMap[y][x] == 0:
 				env.grid.DrawImage(emptySq, op)
 				env.sqList[y][x] = &square{
-					pos:   image.Point{x * env.sqW, y * env.sqW},
+					pos:   image.Point{x, y},
 					state: 0,
 				}
 			case readenMap[y][x] == 1:
 				env.grid.DrawImage(startSq, op)
 				env.sqList[y][x] = &square{
-					pos:   image.Point{x * env.sqW, y * env.sqW},
+					pos:   image.Point{x, y},
 					state: 1,
 				}
 			case readenMap[y][x] == 2:
 				env.grid.DrawImage(endSq, op)
 				env.sqList[y][x] = &square{
-					pos:   image.Point{x * env.sqW, y * env.sqW},
+					pos:   image.Point{x, y},
 					state: 2,
 				}
 			case readenMap[y][x] == 3:
 				env.grid.DrawImage(wallSq, op)
 				env.sqList[y][x] = &square{
-					pos:   image.Point{x * env.sqW, y * env.sqW},
+					pos:   image.Point{x, y},
 					state: 3,
 				}
 			}
@@ -112,14 +112,14 @@ func (env *Env) checkMove(x, y int) bool {
 
 func (env *Env) movePlayer() {
 	switch {
-	case inpututil.IsKeyJustPressed(ebiten.KeyUp):
-		env.execStep(UP, false)
-	case inpututil.IsKeyJustPressed(ebiten.KeyDown):
-		env.execStep(DOWN, false)
 	case inpututil.IsKeyJustPressed(ebiten.KeyLeft):
 		env.execStep(LEFT, false)
+	case inpututil.IsKeyJustPressed(ebiten.KeyUp):
+		env.execStep(UP, false)
 	case inpututil.IsKeyJustPressed(ebiten.KeyRight):
 		env.execStep(RIGHT, false)
+	case inpututil.IsKeyJustPressed(ebiten.KeyDown):
+		env.execStep(DOWN, false)
 	}
 }
 
@@ -129,17 +129,17 @@ func (env *Env) execStep(move int, delay bool) {
 	}
 	moved := 0
 	switch {
-	case move == UP && env.checkMove(env.player.X, env.player.Y-1):
-		env.player.Y--
-		moved = 1
-	case move == DOWN && env.checkMove(env.player.X, env.player.Y+1):
-		env.player.Y++
-		moved = 1
 	case move == LEFT && env.checkMove(env.player.X-1, env.player.Y):
 		env.player.X--
 		moved = 1
+	case move == UP && env.checkMove(env.player.X, env.player.Y-1):
+		env.player.Y--
+		moved = 1
 	case move == RIGHT && env.checkMove(env.player.X+1, env.player.Y):
 		env.player.X++
+		moved = 1
+	case move == DOWN && env.checkMove(env.player.X, env.player.Y+1):
+		env.player.Y++
 		moved = 1
 	}
 	env.score += moved

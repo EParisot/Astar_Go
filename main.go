@@ -22,6 +22,7 @@ const (
 type Env struct {
 	sqList [][]*square
 	grid   *ebiten.Image
+	size   int
 
 	autoMode string
 	player   image.Point
@@ -147,6 +148,7 @@ func main() {
 	env := Env{
 		sqList:    make([][]*square, size),
 		grid:      nil,
+		size:      size,
 		autoMode:  mode,
 		player:    image.Point{start[0], start[1]},
 		score:     0,

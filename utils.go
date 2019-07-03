@@ -99,7 +99,19 @@ func (env *Env) buildSquare(state int) *ebiten.Image {
 	return emptySq
 }
 
-func (env *Env) checkMove(x, y int) bool {
+func (env *Env) checkMove(node image.Point, dir int) bool {
+	x := node.X
+	y := node.Y
+	switch {
+	case dir == 0:
+		x--
+	case dir == 1:
+		y--
+	case dir == 2:
+		x++
+	case dir == 3:
+		y++
+	}
 	if x < 0 ||
 		y < 0 ||
 		x >= winW/env.sqW ||
@@ -129,16 +141,16 @@ func (env *Env) execStep(move int, delay bool) {
 	}
 	moved := 0
 	switch {
-	case move == LEFT && env.checkMove(env.player.X-1, env.player.Y):
+	case move == LEFT && env.checkMove(env.player, LEFT):
 		env.player.X--
 		moved = 1
-	case move == UP && env.checkMove(env.player.X, env.player.Y-1):
+	case move == UP && env.checkMove(env.player, UP):
 		env.player.Y--
 		moved = 1
-	case move == RIGHT && env.checkMove(env.player.X+1, env.player.Y):
+	case move == RIGHT && env.checkMove(env.player, RIGHT):
 		env.player.X++
 		moved = 1
-	case move == DOWN && env.checkMove(env.player.X, env.player.Y+1):
+	case move == DOWN && env.checkMove(env.player, DOWN):
 		env.player.Y++
 		moved = 1
 	}

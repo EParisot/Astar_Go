@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/inpututil"
@@ -157,9 +156,8 @@ func parseArgs() (int, []int, []int, [][]int) {
 	if err != nil {
 		fmt.Println("Error Reading map file")
 	}
-	params := strings.Split(string(firstLine), ";")
 	// Read size
-	size, err := strconv.Atoi(params[0])
+	size, err := strconv.Atoi(string(firstLine))
 	if err != nil || size < 8 {
 		fmt.Println("Invalid Argument")
 		os.Exit(1)
@@ -195,7 +193,7 @@ func parseArgs() (int, []int, []int, [][]int) {
 }
 
 func (env *Env) checkMove(x, y int) bool {
-	if env.sqList[y][x].state == 3 {
+	if x < 0 || y < 0 || x >= winW/env.sqW || y >= winH/env.sqW || env.sqList[y][x].state == 3 {
 		return false
 	}
 	return true
@@ -211,19 +209,19 @@ func (env *Env) checkEnd(x, y int) bool {
 func (env *Env) movePlayer() {
 	switch {
 	case inpututil.IsKeyJustPressed(ebiten.KeyUp):
-		if env.player.Y-1 >= 0 && env.checkMove(env.player.X, env.player.Y-1) {
+		if env.checkMove(env.player.X, env.player.Y-1) {
 			env.player.Y--
 		}
 	case inpututil.IsKeyJustPressed(ebiten.KeyDown):
-		if env.player.Y+1 < winH/env.sqW && env.checkMove(env.player.X, env.player.Y+1) {
+		if env.checkMove(env.player.X, env.player.Y+1) {
 			env.player.Y++
 		}
 	case inpututil.IsKeyJustPressed(ebiten.KeyRight):
-		if env.player.X+1 < winW/env.sqW && env.checkMove(env.player.X+1, env.player.Y) {
+		if env.checkMove(env.player.X+1, env.player.Y) {
 			env.player.X++
 		}
 	case inpututil.IsKeyJustPressed(ebiten.KeyLeft):
-		if env.player.X-1 >= 0 && env.checkMove(env.player.X-1, env.player.Y) {
+		if env.checkMove(env.player.X-1, env.player.Y) {
 			env.player.X--
 		}
 	}

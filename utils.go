@@ -91,6 +91,22 @@ func (env *Env) buildSquare(sqColor color.Color) *ebiten.Image {
 	return emptySq
 }
 
+func (env *Env) movePlayer() {
+	for {
+		switch {
+		case ebiten.IsKeyPressed(ebiten.KeyLeft):
+			env.execStep(LEFT, false)
+		case ebiten.IsKeyPressed(ebiten.KeyUp):
+			env.execStep(UP, false)
+		case ebiten.IsKeyPressed(ebiten.KeyRight):
+			env.execStep(RIGHT, false)
+		case ebiten.IsKeyPressed(ebiten.KeyDown):
+			env.execStep(DOWN, false)
+		}
+		time.Sleep(DELAY / 4)
+	}
+}
+
 func (env *Env) checkMove(node image.Point, dir int) bool {
 	x := node.X
 	y := node.Y
@@ -112,22 +128,6 @@ func (env *Env) checkMove(node image.Point, dir int) bool {
 		return false
 	}
 	return true
-}
-
-func (env *Env) movePlayer() {
-	for {
-		switch {
-		case ebiten.IsKeyPressed(ebiten.KeyLeft):
-			env.execStep(LEFT, false)
-		case ebiten.IsKeyPressed(ebiten.KeyUp):
-			env.execStep(UP, false)
-		case ebiten.IsKeyPressed(ebiten.KeyRight):
-			env.execStep(RIGHT, false)
-		case ebiten.IsKeyPressed(ebiten.KeyDown):
-			env.execStep(DOWN, false)
-		}
-		time.Sleep(DELAY / 4)
-	}
 }
 
 func (env *Env) execStep(move int, delay bool) {
@@ -156,7 +156,7 @@ func (env *Env) execStep(move int, delay bool) {
 }
 
 func (env *Env) checkEnd(x, y int) bool {
-	if env.sqList[y][x].state == 2 {
+	if env.end.X == x && env.end.Y == y {
 		return true
 	}
 	return false

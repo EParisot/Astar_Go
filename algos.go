@@ -87,9 +87,9 @@ func (env *Env) aStar() {
 		openList[0] = nil
 		openList = openList[1:]
 		if env.checkEnd(currNode.pos.X, currNode.pos.Y) {
-			//TODO Run Track
+			closedList = append(closedList, currNode)
 			env.drawMap(closedList)
-			env.moveBot(closedList)
+			//env.moveBot(closedList)
 			return
 		}
 		// Eval neighbors
@@ -111,6 +111,7 @@ func (env *Env) aStar() {
 		}
 		if env.isPresent(currNode, closedList) == -1 {
 			closedList = append(closedList, currNode)
+			env.drawMap(closedList)
 		}
 	}
 	fmt.Println("Astar Ended without solution")
@@ -126,6 +127,7 @@ func (env *Env) drawMap(closedList []*node) {
 		}
 		if node.heuristic > heurMax {
 			heurMax = node.cost
+		}
 	}
 	for _, node := range closedList {
 		// Color squares from nodes
@@ -140,7 +142,26 @@ func (env *Env) drawMap(closedList []*node) {
 }
 
 func (env *Env) moveBot(closedList []*node) {
-	//for _, node := range closedList {
-	
-	//}
+	var finalPath []*node
+	for i := len(closedList) - 1; i >= 0; i-- {
+		if len(finalPath) == 0 {
+			finalPath = append(finalPath, closedList[i])
+		}
+		if true { //TODO find shortest path
+			finalPath = append(finalPath, closedList[i])
+		}
+	}
+	for i := len(finalPath) - 1; i >= 0; i-- {
+		// print trail
+		if env.player.X != env.start.X && env.player.Y != env.start.Y {
+			sqCol := color.RGBA{255, 153, 0, 100}
+			sq := env.buildSquare(sqCol)
+			sqOp := &ebiten.DrawImageOptions{}
+			sqOp.GeoM.Translate(float64(env.player.X*env.sqW), float64(env.player.Y*env.sqW))
+			env.grid.DrawImage(sq, sqOp)
+		}
+		// exec step
+		env.player.X = finalPath[i].pos.X
+		env.player.Y = finalPath[i].pos.Y
+	}
 }

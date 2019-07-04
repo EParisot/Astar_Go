@@ -96,7 +96,7 @@ func (env *Env) aStar() {
 		if env.checkEnd(currNode.pos.X, currNode.pos.Y) {
 			closedList = append(closedList, currNode)
 			env.drawMap(closedList)
-			//env.moveBot(closedList)
+			env.moveBot(closedList)
 			return
 		}
 		// Eval neighbors
@@ -152,17 +152,20 @@ func (env *Env) drawMap(closedList []*node) {
 
 func (env *Env) moveBot(closedList []*node) {
 	var finalPath []*node
+	var currNode *node
 	for i := len(closedList) - 1; i >= 0; i-- {
 		if len(finalPath) == 0 {
 			finalPath = append(finalPath, closedList[i])
+			currNode = closedList[i]
 		}
-		if true { //TODO find shortest path
+		if closedList[i].cost == currNode.cost-1 && env.checkNextStep(closedList[i], currNode) {
 			finalPath = append(finalPath, closedList[i])
+			currNode = closedList[i]
 		}
 	}
 	for i := len(finalPath) - 1; i >= 0; i-- {
 		// print trail
-		if env.player.X != env.start.X && env.player.Y != env.start.Y {
+		if env.player != env.start {
 			sqCol := color.RGBA{255, 153, 0, 100}
 			sq := env.buildSquare(sqCol)
 			sqOp := &ebiten.DrawImageOptions{}
@@ -172,5 +175,17 @@ func (env *Env) moveBot(closedList []*node) {
 		// exec step
 		env.player.X = finalPath[i].pos.X
 		env.player.Y = finalPath[i].pos.Y
+		env.score++
+		time.Sleep(DELAY)
+	}
+}
+
+func (env *Env) checkNextStep(node *node, currNode *node) bool {
+	if math.Abs(float64(currNode.pos.X-node.pos.X)) == 1 && math.Abs(float64(currNode.pos.Y-node.pos.Y)) == 0 {
+		return true
+	} else if math.Abs(float64(currNode.pos.X-node.pos.X)) == 0 && math.Abs(float64(currNode.pos.Y-node.pos.Y)) == 1 {
+		return true
+	} else {
+		return false
 	}
 }

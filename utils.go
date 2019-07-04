@@ -16,7 +16,7 @@ const (
 	RIGHT = 2
 	DOWN  = 3
 
-	DELAY = time.Second / 2
+	DELAY = time.Second / 8
 )
 
 func (env *Env) buildMap(size int, readenMap [][]int) {
@@ -94,16 +94,23 @@ func (env *Env) buildSquare(sqColor color.Color) *ebiten.Image {
 func (env *Env) movePlayer() {
 	for {
 		switch {
-		case ebiten.IsKeyPressed(ebiten.KeyLeft):
-			env.execStep(LEFT, false)
-		case ebiten.IsKeyPressed(ebiten.KeyUp):
-			env.execStep(UP, false)
-		case ebiten.IsKeyPressed(ebiten.KeyRight):
-			env.execStep(RIGHT, false)
-		case ebiten.IsKeyPressed(ebiten.KeyDown):
-			env.execStep(DOWN, false)
+		case ebiten.IsKeyPressed(ebiten.KeyLeft) && env.checkMove(env.player, LEFT):
+			env.player.X--
+			env.score++
+		case ebiten.IsKeyPressed(ebiten.KeyUp) && env.checkMove(env.player, UP):
+			env.player.Y--
+			env.score++
+		case ebiten.IsKeyPressed(ebiten.KeyRight) && env.checkMove(env.player, RIGHT):
+			env.player.X++
+			env.score++
+		case ebiten.IsKeyPressed(ebiten.KeyDown) && env.checkMove(env.player, DOWN):
+			env.player.Y++
+			env.score++
 		}
-		time.Sleep(DELAY / 4)
+		time.Sleep(DELAY)
+		if env.checkEnd(env.player.X, env.player.Y) {
+			env.over = true
+		}
 	}
 }
 
@@ -128,31 +135,6 @@ func (env *Env) checkMove(node image.Point, dir int) bool {
 		return false
 	}
 	return true
-}
-
-func (env *Env) execStep(move int, delay bool) {
-	if delay {
-		time.Sleep(DELAY)
-	}
-	moved := 0
-	switch {
-	case move == LEFT && env.checkMove(env.player, LEFT):
-		env.player.X--
-		moved = 1
-	case move == UP && env.checkMove(env.player, UP):
-		env.player.Y--
-		moved = 1
-	case move == RIGHT && env.checkMove(env.player, RIGHT):
-		env.player.X++
-		moved = 1
-	case move == DOWN && env.checkMove(env.player, DOWN):
-		env.player.Y++
-		moved = 1
-	}
-	env.score += moved
-	if env.checkEnd(env.player.X, env.player.Y) {
-		env.over = true
-	}
 }
 
 func (env *Env) checkEnd(x, y int) bool {

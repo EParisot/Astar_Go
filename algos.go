@@ -36,31 +36,30 @@ type node struct {
 	heuristic int
 }
 
+func (env *Env) appendNeighbor(neighbors []*node, currNode *node, pos image.Point) []*node {
+	cost := currNode.cost + 1
+	heuristic := cost + env.getDist(pos, env.end)
+	neighbors = append(neighbors, &node{pos, cost, heuristic})
+	return neighbors
+}
+
 func (env *Env) getNeighboorsList(currNode *node) []*node {
 	var neighbors []*node
 	if env.checkMove(currNode.pos, LEFT) {
 		pos := image.Point{currNode.pos.X - 1, currNode.pos.Y}
-		cost := currNode.cost + 1
-		heuristic := cost + env.getDist(pos, env.end)
-		neighbors = append(neighbors, &node{pos, cost, heuristic})
+		neighbors = env.appendNeighbor(neighbors, currNode, pos)
 	}
 	if env.checkMove(currNode.pos, UP) {
 		pos := image.Point{currNode.pos.X, currNode.pos.Y - 1}
-		cost := currNode.cost + 1
-		heuristic := cost + env.getDist(pos, env.end)
-		neighbors = append(neighbors, &node{pos, cost, heuristic})
+		neighbors = env.appendNeighbor(neighbors, currNode, pos)
 	}
 	if env.checkMove(currNode.pos, RIGHT) {
 		pos := image.Point{currNode.pos.X + 1, currNode.pos.Y}
-		cost := currNode.cost + 1
-		heuristic := cost + env.getDist(pos, env.end)
-		neighbors = append(neighbors, &node{pos, cost, heuristic})
+		neighbors = env.appendNeighbor(neighbors, currNode, pos)
 	}
 	if env.checkMove(currNode.pos, DOWN) {
 		pos := image.Point{currNode.pos.X, currNode.pos.Y + 1}
-		cost := currNode.cost + 1
-		heuristic := cost + env.getDist(pos, env.end)
-		neighbors = append(neighbors, &node{pos, cost, heuristic})
+		neighbors = env.appendNeighbor(neighbors, currNode, pos)
 	}
 	return neighbors
 }

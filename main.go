@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"image"
-	"image/color"
 	"log"
 	"os"
 	"strconv"
@@ -34,13 +33,6 @@ type Env struct {
 
 	start image.Point
 	end   image.Point
-
-	bgCol     color.Color
-	lnCol     color.Color
-	startCol  color.Color
-	endCol    color.Color
-	wallCol   color.Color
-	playerCol color.Color
 }
 
 type square struct {
@@ -119,9 +111,6 @@ func (env *Env) update(screen *ebiten.Image) error {
 	screen.DrawImage(env.grid, gridOp)
 	// Move
 	if env.over == false {
-		/*if len(env.autoMode) == 0 {
-			env.movePlayer()
-		}*/
 		// Print player
 		playerSq := env.buildSquare(4)
 		playerOp := &ebiten.DrawImageOptions{}
@@ -143,23 +132,17 @@ func (env *Env) update(screen *ebiten.Image) error {
 func main() {
 	mode, size, start, end, readenMap := parseArgs()
 	env := Env{
-		sqList:    make([][]*square, size),
-		grid:      nil,
-		size:      size,
-		autoMode:  mode,
-		player:    image.Point{start[0], start[1]},
-		score:     0,
-		over:      false,
-		sqW:       int(winW / size),
-		offset:    1,
-		start:     image.Point{start[0], start[1]},
-		end:       image.Point{end[0], end[1]},
-		bgCol:     color.RGBA{255, 255, 255, 255},
-		lnCol:     color.RGBA{244, 236, 215, 255},
-		startCol:  color.RGBA{178, 76, 99, 155},
-		endCol:    color.RGBA{50, 232, 117, 155},
-		wallCol:   color.RGBA{0, 0, 0, 155},
-		playerCol: color.RGBA{0, 0, 0, 200},
+		sqList:   make([][]*square, size),
+		grid:     nil,
+		size:     size,
+		autoMode: mode,
+		player:   image.Point{start[0], start[1]},
+		score:    0,
+		over:     false,
+		sqW:      int(winW / size),
+		offset:   1,
+		start:    image.Point{start[0], start[1]},
+		end:      image.Point{end[0], end[1]},
 	}
 	env.buildMap(size, readenMap)
 	// Creates main window

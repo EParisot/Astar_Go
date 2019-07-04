@@ -2,6 +2,7 @@ package main
 
 import (
 	"image"
+	"image/color"
 	"log"
 	"time"
 
@@ -72,23 +73,23 @@ func (env *Env) buildSquare(state int) *ebiten.Image {
 	if err != nil {
 		log.Fatal(err)
 	}
-	emptySq.Fill(env.lnCol)
+	emptySq.Fill(color.RGBA{244, 236, 215, 255})
 	// Creates sub square
 	subSq, err := ebiten.NewImage(env.sqW-2*env.offset, env.sqW-2*env.offset, ebiten.FilterDefault)
 	if err != nil {
 		log.Fatal(err)
 	}
 	switch {
-	case state == 0:
-		subSq.Fill(env.bgCol)
-	case state == 1:
-		subSq.Fill(env.startCol)
-	case state == 2:
-		subSq.Fill(env.endCol)
-	case state == 3:
-		subSq.Fill(env.wallCol)
-	case state == 4:
-		subSq.Fill(env.playerCol)
+	case state == 0: // lines
+		subSq.Fill(color.RGBA{255, 255, 255, 255})
+	case state == 1: // bg
+		subSq.Fill(color.RGBA{178, 76, 99, 155})
+	case state == 2: // start
+		subSq.Fill(color.RGBA{50, 232, 117, 155})
+	case state == 3: // end
+		subSq.Fill(color.RGBA{0, 0, 0, 155})
+	case state == 4: // player
+		subSq.Fill(color.RGBA{255, 163, 26, 200})
 	}
 	// Append sub in full
 	op := &ebiten.DrawImageOptions{}
@@ -133,7 +134,7 @@ func (env *Env) movePlayer() {
 		case ebiten.IsKeyPressed(ebiten.KeyDown):
 			env.execStep(DOWN, false)
 		}
-		time.Sleep(DELAY / 5)
+		time.Sleep(DELAY / 4)
 	}
 }
 

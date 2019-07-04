@@ -16,10 +16,10 @@ import (
 func (env *Env) botPlayer(algo string) {
 	// wait for grphics
 	for {
-		if env.started == true {
+		if ebiten.IsKeyPressed(ebiten.KeySpace) {
 			break
 		}
-		time.Sleep(time.Second)
+		time.Sleep(DELAY)
 	}
 	// Select Algo
 	//TODO append algos here

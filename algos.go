@@ -7,11 +7,19 @@ import (
 	"math"
 	"os"
 	"sort"
+	"time"
 
 	"github.com/hajimehoshi/ebiten"
 )
 
 func (env *Env) botPlayer(algo string) {
+	// wait for grphics
+	for {
+		if env.started == true {
+			break
+		}
+		time.Sleep(time.Second)
+	}
 	// Select Algo
 	//TODO append algos here
 	if algo == "Astar" {
@@ -76,7 +84,7 @@ func (env *Env) aStar() {
 	var closedList []*node
 	var openList []*node
 	// Append start node
-	openList = append(openList, &node{env.start, 0, 0})
+	openList = append(openList, &node{env.start, 0, env.getDist(env.start, env.end)})
 	for len(openList) != 0 {
 		// Sort slice
 		sort.Slice(openList, func(i, j int) bool {

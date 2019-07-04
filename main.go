@@ -27,6 +27,7 @@ type Env struct {
 	autoMode string
 	player   image.Point
 	score    int
+	started  bool
 	over     bool
 
 	sqW    int
@@ -110,6 +111,7 @@ func (env *Env) update(screen *ebiten.Image) error {
 	gridOp := &ebiten.DrawImageOptions{}
 	gridOp.GeoM.Translate(0, 0)
 	screen.DrawImage(env.grid, gridOp)
+	env.started = true
 	// Move
 	if env.over == false {
 		// Print player
@@ -138,6 +140,7 @@ func main() {
 		autoMode: mode,
 		player:   image.Point{start[0], start[1]},
 		score:    0,
+		started:  false,
 		over:     false,
 		sqW:      int(winW / size),
 		offset:   1,

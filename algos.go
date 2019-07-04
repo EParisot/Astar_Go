@@ -3,16 +3,22 @@ package main
 import (
 	"fmt"
 	"image"
+	"image/color"
 	"math"
+	"os"
 	"sort"
+
+	"github.com/hajimehoshi/ebiten"
 )
 
 func (env *Env) botPlayer(algo string) {
 	// Select Algo
 	//TODO append algos here
-	switch {
-	case algo == "Astar":
-		go env.aStar()
+	if algo == "Astar" {
+		env.aStar()
+	} else {
+		fmt.Println("Error Unknown Algorith")
+		os.Exit(1)
 	}
 }
 
@@ -82,9 +88,8 @@ func (env *Env) aStar() {
 		openList = openList[1:]
 		if env.checkEnd(currNode.pos.X, currNode.pos.Y) {
 			//TODO Run Track
-			for _, node := range closedList {
-				fmt.Println(node.cost, " , ", node.heuristic)
-			}
+			env.drawMap(closedList)
+			env.moveBot(closedList)
 			return
 		}
 		// Eval neighbors
@@ -109,4 +114,33 @@ func (env *Env) aStar() {
 		}
 	}
 	fmt.Println("Astar Ended without solution")
+	return
+}
+
+func (env *Env) drawMap(closedList []*node) {
+	costMax := 0
+	heurMax := 0
+	for _, node := range closedList {
+		if node.cost > costMax {
+			costMax = node.cost
+		}
+		if node.heuristic > heurMax {
+			heurMax = node.cost
+	}
+	for _, node := range closedList {
+		// Color squares from nodes
+		costR := uint8(100 * float64(node.cost) / float64(costMax))
+		heurR := uint8(100 * float64(node.heuristic-node.cost) / float64(heurMax))
+		sqCol := color.RGBA{heurR, costR, 0, 100}
+		sq := env.buildSquare(sqCol)
+		sqOp := &ebiten.DrawImageOptions{}
+		sqOp.GeoM.Translate(float64(node.pos.X*env.sqW), float64(node.pos.Y*env.sqW))
+		env.grid.DrawImage(sq, sqOp)
+	}
+}
+
+func (env *Env) moveBot(closedList []*node) {
+	//for _, node := range closedList {
+	
+	//}
 }

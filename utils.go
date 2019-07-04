@@ -27,10 +27,10 @@ func (env *Env) buildMap(size int, readenMap [][]int) {
 		log.Fatal(err)
 	}
 	// Build basic squares
-	emptySq := env.buildSquare(0)
-	startSq := env.buildSquare(1)
-	endSq := env.buildSquare(2)
-	wallSq := env.buildSquare(3)
+	emptySq := env.buildSquare(color.RGBA{255, 255, 255, 155})
+	startSq := env.buildSquare(color.RGBA{153, 0, 0, 155})
+	endSq := env.buildSquare(color.RGBA{0, 102, 0, 155})
+	wallSq := env.buildSquare(color.RGBA{0, 0, 0, 155})
 	// Draw all squares on grid and populate sqList
 	for y := 0; y < size; y++ {
 		env.sqList[y] = make([]*square, size)
@@ -67,7 +67,7 @@ func (env *Env) buildMap(size int, readenMap [][]int) {
 	}
 }
 
-func (env *Env) buildSquare(state int) *ebiten.Image {
+func (env *Env) buildSquare(sqColor color.Color) *ebiten.Image {
 	// Creates square
 	emptySq, err := ebiten.NewImage(env.sqW, env.sqW, ebiten.FilterDefault)
 	if err != nil {
@@ -79,23 +79,15 @@ func (env *Env) buildSquare(state int) *ebiten.Image {
 	if err != nil {
 		log.Fatal(err)
 	}
-	switch {
-	case state == 0: // lines
-		subSq.Fill(color.RGBA{255, 255, 255, 255})
-	case state == 1: // bg
-		subSq.Fill(color.RGBA{178, 76, 99, 155})
-	case state == 2: // start
-		subSq.Fill(color.RGBA{50, 232, 117, 155})
-	case state == 3: // end
-		subSq.Fill(color.RGBA{0, 0, 0, 155})
-	case state == 4: // player
-		subSq.Fill(color.RGBA{255, 163, 26, 200})
-	}
-	// Append sub in full
+	subSq.Fill(sqColor) // bg
+	subSq.Fill(sqColor) // start
+	subSq.Fill(sqColor) // end
+	subSq.Fill(sqColor) // wall
+	subSq.Fill(sqColor) // player
+	// Append sub square in full
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(env.offset), float64(env.offset))
 	emptySq.DrawImage(subSq, op)
-
 	return emptySq
 }
 

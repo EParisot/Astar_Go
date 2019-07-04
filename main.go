@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"image"
+	"image/color"
 	"log"
 	"os"
 	"strconv"
@@ -112,7 +113,7 @@ func (env *Env) update(screen *ebiten.Image) error {
 	// Move
 	if env.over == false {
 		// Print player
-		playerSq := env.buildSquare(4)
+		playerSq := env.buildSquare(color.RGBA{255, 153, 0, 200})
 		playerOp := &ebiten.DrawImageOptions{}
 		playerOp.GeoM.Translate(float64(env.player.X*env.sqW), float64(env.player.Y*env.sqW))
 		screen.DrawImage(playerSq, playerOp)
@@ -133,7 +134,6 @@ func main() {
 	mode, size, start, end, readenMap := parseArgs()
 	env := Env{
 		sqList:   make([][]*square, size),
-		grid:     nil,
 		size:     size,
 		autoMode: mode,
 		player:   image.Point{start[0], start[1]},
@@ -147,7 +147,7 @@ func main() {
 	env.buildMap(size, readenMap)
 	// Creates main window
 	if len(env.autoMode) > 0 {
-		env.botPlayer(env.autoMode)
+		go env.botPlayer(env.autoMode)
 	} else {
 		go env.movePlayer()
 	}

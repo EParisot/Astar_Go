@@ -57,13 +57,13 @@ func (env *Env) getDist(src, dst image.Point) int {
 	return int(dist)
 }
 
-func (env *Env) isPresent(elem *node, list []*node) bool {
-	for _, node := range list {
+func (env *Env) isPresent(elem *node, list []*node) int {
+	for i, node := range list {
 		if elem.pos.X == node.pos.X && elem.pos.Y == node.pos.Y {
-			return true
+			return i
 		}
 	}
-	return false
+	return -1
 }
 
 func (env *Env) aStar() {
@@ -76,7 +76,7 @@ func (env *Env) aStar() {
 		sort.Slice(openList, func(i, j int) bool {
 			return openList[i].heuristic < openList[j].heuristic
 		})
-		// take first
+		// Unstack first
 		currNode := openList[0]
 		openList[0] = nil
 		openList = openList[1:]
@@ -90,22 +90,21 @@ func (env *Env) aStar() {
 		// Eval neighbors
 		neighbors := env.getNeighboorsList(currNode)
 		for _, neighbor := range neighbors {
-			interrupt := false
-			// check if neighbor exists in closedList then break
-			interrupt = env.isPresent(neighbor, closedList)
-			// check if neighbor exists in openList with lower cost, then break
-			for _, node := range openList {
-				if neighbor.pos.X == node.pos.X && neighbor.pos.Y == node.pos.Y &&
-					node.cost < neighbor.cost {
-					interrupt = true
-					break
+			// check if neighbor exists in closedList then continue
+			res := env.isPresent(neighbor, closedList)
+			if res >= 0 {
+				continue
+			}
+			// check if neighbor exists in openList with lower cost, then continue
+			res = env.isPresent(neighbor, openList)
+			if res >= 0 {
+				if openList[res].cost < neighbor.cost {
+					continue
 				}
 			}
-			if interrupt == false {
-				openList = append(openList, neighbor)
-			}
+			openList = append(openList, neighbor)
 		}
-		if env.isPresent(currNode, closedList) == false {
+		if env.isPresent(currNode, closedList) == -1 {
 			closedList = append(closedList, currNode)
 		}
 	}

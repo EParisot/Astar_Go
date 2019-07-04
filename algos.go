@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
 func (env *Env) botPlayer(algo string) {
@@ -123,7 +124,7 @@ func (env *Env) aStar() {
 			env.drawMap(closedList)
 		}
 	}
-	fmt.Println("Astar Ended without solution")
+	ebitenutil.DebugPrint(env.grid, "GAME OVER\nNo Solution")
 	return
 }
 
@@ -158,7 +159,8 @@ func (env *Env) moveBot(closedList []*node) {
 			finalPath = append(finalPath, closedList[i])
 			currNode = closedList[i]
 		}
-		if closedList[i].cost == currNode.cost-1 && env.checkNextStep(closedList[i], currNode) {
+		if closedList[i].cost == currNode.cost-1 &&
+			env.checkNextStep(closedList[i], currNode) {
 			finalPath = append(finalPath, closedList[i])
 			currNode = closedList[i]
 		}
@@ -169,7 +171,8 @@ func (env *Env) moveBot(closedList []*node) {
 			sqCol := color.RGBA{255, 153, 0, 100}
 			sq := env.buildSquare(sqCol)
 			sqOp := &ebiten.DrawImageOptions{}
-			sqOp.GeoM.Translate(float64(env.player.X*env.sqW), float64(env.player.Y*env.sqW))
+			sqOp.GeoM.Translate(float64(env.player.X*env.sqW),
+				float64(env.player.Y*env.sqW))
 			env.grid.DrawImage(sq, sqOp)
 		}
 		// exec step
@@ -181,9 +184,11 @@ func (env *Env) moveBot(closedList []*node) {
 }
 
 func (env *Env) checkNextStep(node *node, currNode *node) bool {
-	if math.Abs(float64(currNode.pos.X-node.pos.X)) == 1 && math.Abs(float64(currNode.pos.Y-node.pos.Y)) == 0 {
+	if math.Abs(float64(currNode.pos.X-node.pos.X)) == 1 &&
+		math.Abs(float64(currNode.pos.Y-node.pos.Y)) == 0 {
 		return true
-	} else if math.Abs(float64(currNode.pos.X-node.pos.X)) == 0 && math.Abs(float64(currNode.pos.Y-node.pos.Y)) == 1 {
+	} else if math.Abs(float64(currNode.pos.X-node.pos.X)) == 0 &&
+		math.Abs(float64(currNode.pos.Y-node.pos.Y)) == 1 {
 		return true
 	} else {
 		return false

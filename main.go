@@ -57,11 +57,8 @@ func parseArgs() (string, int, []int, []int, [][]int) {
 	// Get args
 	mode := ""
 	for i, arg := range os.Args {
-		switch {
-		case arg == "-m":
-			if i+1 < len(os.Args) && len(os.Args[i+1]) > 0 {
-				mode = os.Args[i+1]
-			}
+		if arg == "-m" && i+1 < len(os.Args) {
+			mode = os.Args[i+1]
 		}
 	}
 	// Read map file
@@ -122,9 +119,9 @@ func (env *Env) update(screen *ebiten.Image) error {
 	screen.DrawImage(env.grid, gridOp)
 	// Move
 	if env.over == false {
-		if len(env.autoMode) == 0 {
+		/*if len(env.autoMode) == 0 {
 			env.movePlayer()
-		}
+		}*/
 		// Print player
 		playerSq := env.buildSquare(4)
 		playerOp := &ebiten.DrawImageOptions{}
@@ -168,6 +165,8 @@ func main() {
 	// Creates main window
 	if len(env.autoMode) > 0 {
 		env.botPlayer(env.autoMode)
+	} else {
+		go env.movePlayer()
 	}
 	if err := ebiten.Run(env.update, winW, winH, 1, "Astar Go"); err != nil {
 		log.Fatal(err)

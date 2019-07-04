@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/inpututil"
 )
 
 // Moves opcodes
@@ -123,15 +122,18 @@ func (env *Env) checkMove(node image.Point, dir int) bool {
 }
 
 func (env *Env) movePlayer() {
-	switch {
-	case inpututil.IsKeyJustPressed(ebiten.KeyLeft):
-		env.execStep(LEFT, false)
-	case inpututil.IsKeyJustPressed(ebiten.KeyUp):
-		env.execStep(UP, false)
-	case inpututil.IsKeyJustPressed(ebiten.KeyRight):
-		env.execStep(RIGHT, false)
-	case inpututil.IsKeyJustPressed(ebiten.KeyDown):
-		env.execStep(DOWN, false)
+	for {
+		switch {
+		case ebiten.IsKeyPressed(ebiten.KeyLeft):
+			env.execStep(LEFT, false)
+		case ebiten.IsKeyPressed(ebiten.KeyUp):
+			env.execStep(UP, false)
+		case ebiten.IsKeyPressed(ebiten.KeyRight):
+			env.execStep(RIGHT, false)
+		case ebiten.IsKeyPressed(ebiten.KeyDown):
+			env.execStep(DOWN, false)
+		}
+		time.Sleep(DELAY / 5)
 	}
 }
 

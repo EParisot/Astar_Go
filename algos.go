@@ -102,6 +102,7 @@ func (env *Env) aStar() {
 		}
 		// Eval neighbors
 		neighbors := env.getNeighboorsList(currNode)
+		validNeighbors := false
 		for _, neighbor := range neighbors {
 			// check if neighbor exists in closedList then continue
 			res := env.isPresent(neighbor, closedList)
@@ -111,13 +112,14 @@ func (env *Env) aStar() {
 			// check if neighbor exists in openList with lower cost, then continue
 			res = env.isPresent(neighbor, openList)
 			if res >= 0 {
-				if openList[res].cost < neighbor.cost {
+				if openList[res].cost <= neighbor.cost {
 					continue
 				}
 			}
 			openList = append(openList, neighbor)
+			validNeighbors = true
 		}
-		if env.isPresent(currNode, closedList) == -1 {
+		if validNeighbors && env.isPresent(currNode, closedList) == -1 {
 			closedList = append(closedList, currNode)
 			env.drawMap(closedList)
 		}
